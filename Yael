@@ -1,0 +1,86 @@
+import requests
+import json
+from nltk.tokenize import word_tokenize  # Asegúrate de tener nltk instalado y descargado 'punkt' para tokenizar
+
+# Función para obtener datos de un producto específico por su ID
+def obtener_dato(id_producto, access_token):
+    url = f'https://api.mercadolibre.com/items/{id_producto}'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+
+    response = requests.get(url, headers=headers)
+    return response.json()
+
+# Llena los datos de token de acceso y ID de producto en Mercado Libre
+access_token = 'TU_TOKEN_DE_ACCESO'
+id_producto = 'MLA123456789'  # ID de producto en Mercado Libre, reemplaza con uno real
+producto = obtener_dato(id_producto, access_token)
+print(json.dumps(producto, indent=2))  # Imprimir los datos en formato JSON
+
+# Ejemplo de análisis de título y descripción
+titulo = "Cuchara cafetera"
+descripcion = "Cuchara cafetera, Acero Inoxidable, 1pz"
+
+tokens_titulo = word_tokenize(titulo.lower())
+tokens_descripcion = word_tokenize(descripcion.lower())
+
+print("Tokens del título:", tokens_titulo)
+print("Tokens de la descripción:", tokens_descripcion)
+
+def analizar_titulo(titulo):
+    # Regla 1: Uso adecuado de palabras clave relevantes
+    palabras_clave = ['cuchara', 'cafetera']
+    palabras_en_titulo = titulo.lower().split()
+    palabras_clave_encontradas = [palabra for palabra in palabras_clave if palabra.lower() in palabras_en_titulo]
+
+    # Regla 2: Longitud óptima del título
+    longitud_minima = 20
+    longitud_maxima = 70
+    longitud_titulo = len(titulo)
+
+    # Evaluar las reglas y generar sugerencias
+    sugerencias = []
+    if len(palabras_clave_encontradas) < len(palabras_clave):
+        sugerencias.append("Agregar más palabras clave relevantes al título.")
+
+    if longitud_titulo < longitud_minima:
+        sugerencias.append("El título es muy corto. Considera agregar más detalles.")
+    elif longitud_titulo > longitud_maxima:
+        sugerencias.append("El título es muy largo. Considera reducirlo para mejorar la legibilidad.")
+
+    return sugerencias
+
+def analizar_descripcion(descripcion):
+    # Regla 3: Inclusión de características importantes del producto
+    caracteristicas_importantes = ['cuchara', 'acero inoxidable']
+    caracteristicas_en_descripcion = [caracteristica for caracteristica in caracteristicas_importantes if caracteristica.lower() in descripcion.lower()]
+
+    # Regla 4: Evitar contenido duplicado o sin relevancia
+    palabras_descripcion = descripcion.lower().split()
+    palabras_repetidas = len(palabras_descripcion) - len(set(palabras_descripcion))
+
+    sugerencias = []
+    if len(caracteristicas_en_descripcion) < len(caracteristicas_importantes):
+        sugerencias.append("Agregar más características importantes del producto en la descripción.")
+
+    if palabras_repetidas > 10:
+        sugerencias.append("La descripción tiene contenido duplicado. Revisa y elimina repeticiones innecesarias.")
+
+    return sugerencias
+
+# Ejemplo de uso
+titulo_producto = "Cuchara cafetera"
+descripcion_producto = "Cuchara cafetera, Acero Inoxidable, 1pz."
+
+# Analizar título
+print("\nAnálisis del título:")
+sugerencias_titulo = analizar_titulo(titulo_producto)
+for sugerencia in sugerencias_titulo:
+    print("- " + sugerencia)
+
+# Analizar descripción
+print("\nAnálisis de la descripción:")
+sugerencias_descripcion = analizar_descripcion(descripcion_producto)
+for sugerencia in sugerencias_descripcion:
+    print("- " + sugerencia)
